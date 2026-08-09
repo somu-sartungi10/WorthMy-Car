@@ -4,7 +4,7 @@ An end-to-end used-car resale price prediction application built with machine le
 
 ## Live Demo
 
-- **Web App:** Add your Streamlit URL here
+- **Web App:** https://carpredict-bhadilthudnjznvfsbpbyr.streamlit.app/
 - **API Documentation:** https://carpredict-kcjf.onrender.com/docs
 - **API Health Check:** https://carpredict-kcjf.onrender.com/health
 
