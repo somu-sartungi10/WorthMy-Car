@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import os
 import pandas as pd
 import requests
 import streamlit as st
@@ -7,8 +7,10 @@ import streamlit as st
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_PATH = PROJECT_ROOT / "data" / "raw" / "cardata.csv"
-API_URL = "http://127.0.0.1:8000/predict"
-
+API_URL = os.getenv(
+    "API_URL",
+    "http://127.0.0.1:8000/predict",
+)
 st.set_page_config(
     page_title="CarPredict",
     page_icon="🚗",
