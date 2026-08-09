@@ -224,7 +224,7 @@ if submitted:
 
     try:
         with st.spinner("Calculating estimated resale price..."):
-            response = requests.post(API_URL, json=car_data, timeout=10)
+            response = requests.post(API_URL, json=car_data, timeout=90)
             response.raise_for_status()
             result = response.json()
 
