@@ -8,7 +8,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import Pipeline
 
-from .load_data import load_and_clean_data, stratified_split
+from .data_preprocessing import load_and_clean_data, stratified_split
 from .pipeline import build_pipeline
 
 

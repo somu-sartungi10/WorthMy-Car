@@ -4,7 +4,7 @@ from sklearn.compose import ColumnTransformer, make_column_selector as selector
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
-from .load_data import extract_number
+from .data_preprocessing import extract_number
 
 
 class EngineSpecExtractor(BaseEstimator, TransformerMixin):
