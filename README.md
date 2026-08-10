@@ -82,7 +82,7 @@ CarPredict/
 │   ├── train.py            # Model training script
 │   ├── evaluate.py         # Test-set evaluation
 │   ├── pipeline.py         # Preprocessing pipeline
-│   └── load_data.py        # Data loading and splitting
+│   └── data_preprocessing.py        # Data loading and splitting
 ├── requirements.txt
 └── README.md
 ```
