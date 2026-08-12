@@ -29,9 +29,27 @@ def get_options(dataframe, column_name):
 
 df = load_data()
 
-st.title("🚗 CarPredict")
-st.write("Enter the complete vehicle details to estimate its resale price.")
-st.info("All fields below are model inputs. Price is the predicted output, so you do not enter it.")
+
+
+#UI Elements start's from here
+
+with st.sidebar:
+    st.title("🚗 Resale-Predictor")
+    st.caption("Resale-predictor is an end to end machine learning project built to predict the resale price of any used car")   
+
+    mdf = pd.DataFrame(
+                {
+                    "Key Metrics" : ['R-squared','MAE','RMSE'],
+                    "Score" : [0.8859,'Rs 259069','Rs 722302']
+                }
+            )
+    st.header("Model Performance")
+    st.dataframe(mdf,hide_index=True)
+    st.divider()
+    st.info('The model explains approximately 88.6% of the variation in used-car prices on the unseen test data')
+
+st.header("Car Detail")
+st.caption("Input the detail of your car to predict the resale price")
 
 with st.form("car_prediction_form"):
 

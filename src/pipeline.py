@@ -12,6 +12,7 @@ class EngineSpecExtractor(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
+        
         X = X.copy()
         X['engine_cc'] = X['Engine'].apply(extract_number)
         X['max_power_bhp'] = X['Max Power'].apply(extract_number)
@@ -36,3 +37,6 @@ def build_pipeline():
         ('spec_extractor', EngineSpecExtractor()),
         ('preprocess', preprocess),
     ])
+
+
+
