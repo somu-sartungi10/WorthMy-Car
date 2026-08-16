@@ -1,5 +1,18 @@
 {
-  "mae": 259068.67,
-  "rmse": 722302.0,
-  "r2": 0.8859
+    "test_metrics": {
+        "MAE": 247174.21,
+        "RMSE": 656360.07,
+        "R2": 0.9058
+    },
+    "model": {
+        "algorithm": "RandomForestRegressor",
+        "hyperparameters": {
+            "n_estimators": 200,
+            "min_samples_split": 2,
+            "min_samples_leaf": 1,
+            "max_features": 1.0,
+            "max_depth": null,
+            "random_state": 42
+        }
+    }
 }

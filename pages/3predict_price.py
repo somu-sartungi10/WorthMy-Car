@@ -1,22 +1,59 @@
 from pathlib import Path
 import os
+
 import pandas as pd
 import requests
 import streamlit as st
+import time
+
+
+
+
+if "prediction_result" not in st.session_state:
+    st.session_state.prediction_result = None
+
+if "car_data" not in st.session_state:
+    st.session_state.car_data = None
+
+
+
+# Project Paths
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
 DATA_PATH = PROJECT_ROOT / "data" / "raw" / "cardata.csv"
+
+
+# --------------------------------------------------
+# API URLs
+# --------------------------------------------------
+
 API_URL = os.getenv(
     "API_URL",
     "http://127.0.0.1:8000/predict",
 )
+
+REPORT_API_URL = os.getenv(
+    "REPORT_API_URL",
+    "http://127.0.0.1:8000/download-report",
+)
+
+
+# --------------------------------------------------
+# Streamlit Configuration
+# --------------------------------------------------
+
 st.set_page_config(
-    page_title="CarPredict",
+    page_title="WorthMy-Car",
     page_icon="🚗",
     layout="wide",
 )
 
+
+# --------------------------------------------------
+# Load Dataset
+# --------------------------------------------------
 
 @st.cache_data
 def load_data():
@@ -24,20 +61,28 @@ def load_data():
 
 
 def get_options(dataframe, column_name):
-    return sorted(dataframe[column_name].dropna().astype(str).unique())
+    return sorted(
+        dataframe[column_name]
+        .dropna()
+        .astype(str)
+        .unique()
+    )
 
 
 df = load_data()
 
 
-
-#UI Elements start's from here
-
-
 st.header("Car Detail")
-st.caption("Input the detail of your car to predict the resale price")
+
+st.caption(
+    "Input the detail of your car to predict the resale price"
+)
+
+
+
 
 with st.form("car_prediction_form"):
+
 
     st.subheader("1. Vehicle identity")
 
@@ -51,12 +96,20 @@ with st.form("car_prediction_form"):
 
     with col2:
         available_models = sorted(
-            df.loc[df["Make"] == make, "Model"].dropna().astype(str).unique()
+            df.loc[
+                df["Make"] == make,
+                "Model"
+            ]
+            .dropna()
+            .astype(str)
+            .unique()
         )
+
         model = st.selectbox(
             label="Car model",
             options=available_models,
         )
+
 
     st.subheader("2. Usage and ownership")
 
@@ -92,6 +145,7 @@ with st.form("car_prediction_form"):
             options=get_options(df, "Seller Type"),
         )
 
+
     st.subheader("3. Vehicle configuration")
 
     col1, col2, col3, col4 = st.columns(4)
@@ -123,6 +177,7 @@ with st.form("car_prediction_form"):
             step=1.0,
         )
 
+
     st.subheader("4. Location and appearance")
 
     col1, col2 = st.columns(2)
@@ -138,6 +193,7 @@ with st.form("car_prediction_form"):
             label="Car colour",
             options=get_options(df, "Color"),
         )
+
 
     st.subheader("5. Engine specifications")
 
@@ -163,6 +219,8 @@ with st.form("car_prediction_form"):
             value="195 Nm",
             help="Example: 195 Nm",
         )
+
+
 
     st.subheader("6. Vehicle dimensions")
 
@@ -196,11 +254,13 @@ with st.form("car_prediction_form"):
             value=45.0,
         )
 
+
     submitted = st.form_submit_button(
         label="Estimate resale price",
         type="primary",
         use_container_width=True,
     )
+
 
 
 if submitted:
@@ -226,27 +286,155 @@ if submitted:
         "fuel_tank_capacity": fuel_tank_capacity,
     }
 
+
+    st.session_state.prediction_result =None
+    st.session_state.car_data=None
+    st.session_state.pdf_data=None
+
+
     try:
-        with st.spinner("Calculating estimated resale price..."):
-            response = requests.post(API_URL, json=car_data, timeout=90)
+        start_time = time.perf_counter()
+
+        with st.spinner(
+            "Calculating estimated resale price..."
+        ):
+            response = requests.post(
+                API_URL,
+                json=car_data,
+                timeout=90,
+            )
+
             response.raise_for_status()
+
             result = response.json()
+            predicted_price = result["predicted_price"]
 
-        predicted_price = result["predicted_price"]
+            elapsed = time.perf_counter()-start_time
+            minimum_loading_time=0.8
 
-        st.divider()
-        st.success("Prediction completed successfully.")
-        st.metric(
-            label="Estimated resale price",
-            value=f"₹{predicted_price:,.0f}",
-        )
-        st.caption("This is a model estimate, not a guaranteed selling price.")
+            if elapsed < minimum_loading_time:
+                time.sleep(
+                    minimum_loading_time - elapsed
+                )
+        
+
+        st.session_state.prediction_result = predicted_price
+        st.session_state.car_data = car_data
+
 
     except requests.exceptions.ConnectionError:
+
         st.error(
             "Cannot connect to the FastAPI backend. "
             "Start it using: uvicorn src.api:app --reload"
         )
 
     except requests.exceptions.RequestException as error:
-        st.error(f"Prediction failed: {error}")
+
+        st.error(
+            f"Prediction failed: {error}"
+        )
+
+
+
+
+if st.session_state.prediction_result is not None:
+
+    predicted_price = (
+        st.session_state.prediction_result
+    )
+
+    saved_car_data = (
+        st.session_state.car_data
+    )
+
+
+    #Prediction result
+
+    st.divider()
+
+    st.subheader(
+        ":material/money_bag: Estimated Resale Value"
+    )
+
+
+    c1, c2, c3 = st.columns(3)
+
+
+    with c1:
+
+        st.metric(
+            label="Estimated Price",
+            value=f"₹{predicted_price:,.0f}",
+        )
+
+
+    with c2:
+
+        car_age = (
+            2026 - saved_car_data["year"]
+        )
+
+        st.metric(
+            label="Car Age",
+            value=f"{car_age} year",
+        )
+
+
+    with c3:
+
+        st.metric(
+            label="Kilometres Driven",
+            value=(
+                f"{saved_car_data['kilometer']:,.0f} km"
+            ),
+        )
+
+
+    st.caption(
+        "This is a model estimate and may differ "
+        "from the actual market selling price."
+    )
+
+
+    
+    st.subheader("Car Price Report")
+
+
+    try:
+
+        with st.spinner(
+            "Preparing PDF report..."
+        ):
+
+            pdf_response = requests.post(
+                REPORT_API_URL,
+                json=saved_car_data,
+                timeout=90,
+            )
+
+            pdf_response.raise_for_status()
+
+
+        st.download_button(
+            label=":material/download: Download PDF report",
+            data=pdf_response.content,
+            file_name="car_price_report.pdf",
+            mime="application/pdf",
+            use_container_width=True,
+        )
+
+
+    except requests.exceptions.ConnectionError:
+
+        st.error(
+            "Cannot connect to the FastAPI backend "
+            "while generating the PDF report."
+        )
+
+
+    except requests.exceptions.RequestException as error:
+
+        st.error(
+            f"Could not generate PDF report: {error}"
+        )

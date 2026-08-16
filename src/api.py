@@ -6,6 +6,9 @@ import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
+from pdf_report import create_pdf_report
+from fastapi.responses import StreamingResponse
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = PROJECT_ROOT / "models" / "car_price_model.pkl"
@@ -84,3 +87,28 @@ def predict_price(car: CarInput):
         "predicted_price": round(prediction, 2),
         "currency": "INR",
     }
+
+
+@app.post("/download-report")
+def download_report(car: CarInput):
+
+    car_frame = pd.DataFrame([car.to_model_row()])
+
+    prediction = float(
+        get_model().predict(car_frame)[0]
+    )
+
+    pdf = create_pdf_report(
+        car,
+        round(prediction, 2),
+    )
+
+    return StreamingResponse(
+        pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": (
+                "attachment; filename=car_price_report.pdf"
+            )
+        },
+    )
