@@ -403,38 +403,43 @@ if st.session_state.prediction_result is not None:
 
     try:
 
-        with st.spinner(
-            "Preparing PDF report..."
-        ):
+       with st.spinner("Preparing PDF report..."):
 
-            pdf_response = requests.post(
-                REPORT_API_URL,
-                json=saved_car_data,
-                timeout=90,
-            )
-
-            pdf_response.raise_for_status()
-
-
-        st.download_button(
-            label=":material/download: Download PDF report",
-            data=pdf_response.content,
-            file_name="car_price_report.pdf",
-            mime="application/pdf",
-            use_container_width=True,
+        pdf_response = requests.post(
+            REPORT_API_URL,
+            json=saved_car_data,
+            timeout=90,
         )
 
+       print("PDF STATUS:", pdf_response.status_code)
+       print("PDF CONTENT TYPE:", pdf_response.headers.get("content-type"))
 
-    except requests.exceptions.ConnectionError:
+       pdf_response.raise_for_status()
+
+       st.download_button(
+        label=":material/download: Download PDF report",
+        data=pdf_response.content,
+        file_name="car_price_report.pdf",
+        mime="application/pdf",
+        use_container_width=True,
+       )
+
+    except requests.exceptions.ConnectionError as error:
+
+       st.error(f"Connection error: {error}")
+ 
+    except requests.exceptions.HTTPError as error:
 
         st.error(
-            "Cannot connect to the FastAPI backend "
-            "while generating the PDF report."
+            f"FastAPI returned an error: "
+            f"{pdf_response.status_code} — "
+            f"{pdf_response.text[:500]}"
         )
-
 
     except requests.exceptions.RequestException as error:
 
-        st.error(
-            f"Could not generate PDF report: {error}"
-        )
+        st.error(f"Request failed: {error}")
+
+    except Exception as error:
+
+       st.error(f"Unexpected error: {error}")
