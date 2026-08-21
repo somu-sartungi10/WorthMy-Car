@@ -24,10 +24,9 @@ The project includes:
 
 | Metric | Result |
 |---|---:|
-| R² Score | 0.8859 |
-| Mean Absolute Error | ₹259,069 |
-| Root Mean Squared Error | ₹722,302 |
-| 5-Fold Cross-Validation RMSE | ₹1,023,925 ± ₹217,440 |
+| R² Score | 0.9058 |
+| Mean Absolute Error | ₹247,174 |
+| Root Mean Squared Error | ₹656,360 |
 
 The model explains approximately **88.6%** of the variation in used-car prices on the unseen test data.
 

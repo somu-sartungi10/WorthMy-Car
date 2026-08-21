@@ -84,13 +84,13 @@ st.caption(
 with st.form("car_prediction_form"):
 
 
-    st.subheader("1. Vehicle identity")
+    st.subheader("1. Vehicle Identity")
 
     col1, col2 = st.columns(2)
 
     with col1:
         make = st.selectbox(
-            label="Car make / brand",
+            label="Car Make / Brand",
             options=get_options(df, "Make"),
         )
 
@@ -111,7 +111,7 @@ with st.form("car_prediction_form"):
         )
 
 
-    st.subheader("2. Usage and ownership")
+    st.subheader("2. Usage and Ownership")
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -126,7 +126,7 @@ with st.form("car_prediction_form"):
 
     with col2:
         kilometer = st.number_input(
-            label="Kilometres driven",
+            label="Kilometres Driven",
             min_value=0,
             max_value=1_000_000,
             value=50_000,
@@ -135,24 +135,24 @@ with st.form("car_prediction_form"):
 
     with col3:
         owner = st.selectbox(
-            label="Owner type",
+            label="Owner Type",
             options=get_options(df, "Owner"),
         )
 
     with col4:
         seller_type = st.selectbox(
-            label="Seller type",
+            label="Seller Type",
             options=get_options(df, "Seller Type"),
         )
 
 
-    st.subheader("3. Vehicle configuration")
+    st.subheader("3. Vehicle Configuration")
 
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         fuel_type = st.selectbox(
-            label="Fuel type",
+            label="Fuel Type",
             options=get_options(df, "Fuel Type"),
         )
 
@@ -170,7 +170,7 @@ with st.form("car_prediction_form"):
 
     with col4:
         seating_capacity = st.number_input(
-            label="Seating capacity",
+            label="Seating Capacity",
             min_value=1.0,
             max_value=12.0,
             value=5.0,
@@ -178,51 +178,51 @@ with st.form("car_prediction_form"):
         )
 
 
-    st.subheader("4. Location and appearance")
+    st.subheader("4. Location and Appearance")
 
     col1, col2 = st.columns(2)
 
     with col1:
         location = st.selectbox(
-            label="Car location",
+            label="Car Location",
             options=get_options(df, "Location"),
         )
 
     with col2:
         color = st.selectbox(
-            label="Car colour",
+            label="Car Colour",
             options=get_options(df, "Color"),
         )
 
 
-    st.subheader("5. Engine specifications")
+    st.subheader("5. Engine Specifications")
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
         engine = st.text_input(
-            label="Engine capacity",
+            label="Engine Capacity",
             value="1493 cc",
             help="Example: 1493 cc",
         )
 
     with col2:
         max_power = st.text_input(
-            label="Maximum power",
+            label="Maximum Power",
             value="70 bhp",
             help="Example: 70 bhp",
         )
 
     with col3:
         max_torque = st.text_input(
-            label="Maximum torque",
+            label="Maximum Torque",
             value="195 Nm",
             help="Example: 195 Nm",
         )
 
 
 
-    st.subheader("6. Vehicle dimensions")
+    st.subheader("6. Vehicle Dimensions")
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -249,14 +249,14 @@ with st.form("car_prediction_form"):
 
     with col4:
         fuel_tank_capacity = st.number_input(
-            label="Fuel tank capacity (litres)",
+            label="Fuel Tank Capacity (litres)",
             min_value=0.0,
             value=45.0,
         )
 
 
     submitted = st.form_submit_button(
-        label="Estimate resale price",
+        label="Estimate Resale Price",
         type="primary",
         use_container_width=True,
     )
