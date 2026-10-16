@@ -24,7 +24,7 @@ shadcn/ui** on the frontend.
 
 | | Link |
 |---|---|
-| **Web App (React, Vercel)** | https://worth-my-car.vercel.app/predict |
+| **Web App (React, Vercel)** | https://worth-my-car.vercel.app/ |
 | **REST API (Render)** | https://carpredict-kcjf.onrender.com |
 | **API docs (Swagger UI)** | https://carpredict-kcjf.onrender.com/docs |
 | **API health check** | https://carpredict-kcjf.onrender.com/health |
