@@ -1,154 +1,212 @@
-# 🚗 CarPredict
+# 🚗 WorthMy-Car — Used Car Resale Price Prediction
 
-An end-to-end used-car resale price prediction application built with machine learning, FastAPI, and Streamlit.
+**Estimate what a used car is really worth — and see exactly why.**
 
-## Live Demo
+WorthMy-Car (a.k.a. *CarPredict*) is a full-stack machine-learning application that
+predicts the resale price of a used car in India from its details (brand, model, year,
+kilometres driven, fuel type, transmission, engine specs and dimensions), then explains
+the number with per-feature contributions that add up to the estimate.
 
-- **Web App:** https://carpredict-bhadilthudnjznvfsbpbyr.streamlit.app/
-- **API Documentation:** https://carpredict-kcjf.onrender.com/docs
-- **API Health Check:** https://carpredict-kcjf.onrender.com/health
+Built with **scikit-learn + FastAPI** on the backend and **React + Vite + Tailwind +
+shadcn/ui** on the frontend.
 
-## Project Overview
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwindcss&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
 
-CarPredict estimates a used car’s resale price from details such as brand, model, manufacturing year, kilometres driven, fuel type, transmission, engine specifications, and vehicle dimensions.
+---
 
-The project includes:
+## 🌐 Live Demo
 
-- A scikit-learn machine-learning pipeline
-- A Random Forest regression model
-- A FastAPI backend for serving predictions
-- A Streamlit frontend for user input
-- Cloud deployment using Render and Streamlit Community Cloud
+<!-- ============================================================
+     PASTE YOUR VERCEL LINK HERE after deploying (see "Deploy the
+     React app on Vercel" below), then delete this comment.
+     ============================================================ -->
 
-## Model Performance
+| | Link |
+|---|---|
+| **Web App (React, Vercel)** | 🔗 `https://YOUR-PROJECT.vercel.app` — *← replace with your Vercel URL* |
+| **REST API (Render)** | https://carpredict-kcjf.onrender.com |
+| **API docs (Swagger UI)** | https://carpredict-kcjf.onrender.com/docs |
+| **API health check** | https://carpredict-kcjf.onrender.com/health |
+| **Legacy Streamlit UI** | https://carpredict-bhadilthudnjznvfsbpbyr.streamlit.app/ |
+
+---
+
+## ✨ Features
+
+**Predict Price**
+- 6-section form covering vehicle identity, usage & ownership, configuration,
+  location & colour, engine specs and dimensions — all dropdowns populated from the
+  real dataset (no free-typing where it matters)
+- Fair-price estimate returned in under a second from a 200-tree Random Forest
+
+**Explainability (the interesting part)**
+- Every estimate comes with a **"What drives this estimate"** breakdown: a base value
+  plus signed, per-feature contributions (green pushes the price up, red pulls it down)
+- The contributions are exact — `base value + Σ contributions = predicted price`, so
+  the model's arithmetic is fully auditable
+- One-hot encoded columns are folded back to human-readable names
+  (`cat__Make_Audi` → `Make`, `engine_cc` → "Engine capacity (cc)")
+
+**Deal Analysis**
+- Compare an asking price against the model's estimated market price side by side,
+  with an instant verdict (Excellent / Good / Fair / Overpriced)
+
+**Reports & data**
+- One-click **PDF report** download with the full vehicle summary and the estimate
+- Dataset explorer: model metrics, training-set stats and a sample of the raw data,
+  served from a generated `meta.json` (works even before the API is up)
+
+**Engineering**
+- Input validation via Pydantic, automated preprocessing (median imputation,
+  standard scaling, one-hot encoding with `handle_unknown='ignore'`)
+- Engine/power/torque parsed out of brochure strings like `"1493 cc"` / `"70 bhp"`
+- CORS-enabled API, Swagger UI at `/docs`, Docker Compose for the whole stack
+
+---
+
+## 🏗️ Architecture
+
+```text
+React SPA (Vite + TypeScript + shadcn/ui)          deployed on Vercel
+        │  fetch POST /predict, /download-report
+        ▼
+FastAPI backend                                    deployed on Render
+        │  pandas DataFrame → sklearn Pipeline
+        ▼
+ColumnTransformer ──► RandomForestRegressor (200 trees)
+        │
+        ▼
+Predicted price (₹) + explanation {base_value, contributions[]}
+```
+
+---
+
+## 📊 Model Performance
+
+Trained on **2,059 listings × 20 columns** (`data/raw/cardata.csv`) with a
+stratified 80/20 train–test split.
 
 | Metric | Result |
 |---|---:|
-| R² Score | 0.9058 |
-| Mean Absolute Error | ₹247,174 |
-| Root Mean Squared Error | ₹656,360 |
+| R² Score | **0.9058** |
+| Mean Absolute Error | **₹2,47,174** |
+| Root Mean Squared Error | **₹656,360** |
 
-The model explains approximately **88.6%** of the variation in used-car prices on the unseen test data.
+The model explains about **90.6%** of the variation in used-car prices on unseen
+test data.
 
-## Architecture
+| Model details | |
+|---|---|
+| Algorithm | `RandomForestRegressor` |
+| Trees / depth | 200 / unlimited |
+| `min_samples_split` / `leaf` | 2 / 1 |
+| `max_features` | 1.0 |
+| `random_state` | 42 |
 
-```text
-Streamlit Frontend
-        ↓
-FastAPI Backend
-        ↓
-Scikit-learn Pipeline + Random Forest Model
-        ↓
-Predicted Used-Car Price
-```
+---
 
-## Features
-
-- Selectable car make, model, fuel type, transmission, location, and ownership details
-- Input validation through FastAPI and Pydantic
-- Automated preprocessing for missing values and categorical data
-- Engine, power, and torque extraction from text values
-- Public REST API documentation through Swagger UI
-- Deployed prediction API and web interface
-
-## Tech Stack
-
-- Python
-- Pandas and NumPy
-- Scikit-learn
-- FastAPI
-- Uvicorn
-- Streamlit
-- Joblib
-- Render
-- Streamlit Community Cloud
-
-## Project Structure
+## 🗂️ Project Structure
 
 ```text
 CarPredict/
-├── app.py                  # Streamlit frontend
-├── data/
-│   ├── raw/                # Original dataset
-│   └── processed/          # Train and test datasets
-├── models/
-│   └── car_price_model.pkl # Saved ML pipeline and model
-├── notebooks/
-│   ├── eda.ipynb
-│   └── model_traininig.ipynb
+├── frontend/                   # React + Vite + shadcn/ui app (deployed on Vercel)
+│   ├── scripts/generate-meta.mjs  # Builds public/meta.json from the dataset + metrics
+│   └── src/
+│       ├── pages/              # Home, PredictPrice, DealAnalysis
+│       ├── components/         # App shell, sections, shadcn/ui components
+│       └── lib/                # API client, types, formatting, meta loader
 ├── src/
-│   ├── api.py              # FastAPI prediction API
-│   ├── train.py            # Model training script
-│   ├── evaluate.py         # Test-set evaluation
-│   ├── pipeline.py         # Preprocessing pipeline
-│   └── data_preprocessing.py        # Data loading and splitting
-├── requirements.txt
-└── README.md
+│   ├── api.py                  # FastAPI app (/predict, /download-report, /health)
+│   ├── explain.py              # Per-prediction feature contributions
+│   ├── train.py                # Training + evaluation + model export
+│   ├── pipeline.py             # Preprocessing pipeline (impute/scale/one-hot)
+│   ├── data_preprocessing.py   # Data loading, cleaning, stratified split
+│   └── evaluate.py             # Test-set evaluation
+├── data/
+│   ├── raw/cardata.csv         # Original dataset (2,059 rows)
+│   └── processed/              # Train/test splits
+├── models/
+│   ├── car_price_model.pkl     # Trained pipeline (loaded by the API)
+│   └── metrics.json            # Test metrics (fed into the UI)
+├── notebooks/                  # EDA and training experiments
+├── app.py, pages/              # Legacy Streamlit UI (kept for reference)
+├── pdf_report.py               # PDF report generation (ReportLab)
+├── Dockerfile.api, Dockerfile.streamlit, docker-compose.yml
+└── requirements.txt
 ```
 
-## Run Locally
+---
 
-### 1. Clone the repository
+## 🚀 Run Locally
+
+### Prerequisites
+
+- Python 3.14 (the version pinned in `.python-version`)
+- Node.js 20 or newer (Vite 8 requires 20.19+ / 22.12+)
+
+### 1. Clone
 
 ```bash
 git clone https://github.com/somu-sartungi10/CarPredict.git
 cd CarPredict
 ```
 
-### 2. Install dependencies
+### 2. Backend
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-### 3. Start the FastAPI backend
-
-```bash
 uvicorn src.api:app --reload
 ```
 
-The API will run at:
+- API: http://127.0.0.1:8000
+- Swagger UI: http://127.0.0.1:8000/docs
 
-```text
-http://127.0.0.1:8000
+### 3. Frontend (second terminal)
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-Swagger API documentation:
+- App: http://localhost:5173 (talks to `http://127.0.0.1:8000` by default;
+  override with the `VITE_API_URL` env var)
 
-```text
-http://127.0.0.1:8000/docs
-```
+> `npm run dev` and `npm run build` automatically regenerate
+> `frontend/public/meta.json` from `data/raw/cardata.csv` + `models/metrics.json`,
+> so the dropdowns and model metrics always match your data.
 
-### 4. Start the Streamlit frontend
-
-Open a second terminal and run:
+<details>
+<summary>Legacy Streamlit UI</summary>
 
 ```bash
 streamlit run app.py
 ```
+</details>
 
-## API Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/health` | Confirms the API and model are available |
-| POST | `/predict` | Returns a predicted resale price |
-| GET | `/docs` | Interactive Swagger API documentation |
-
-## Retrain the Model
+<details>
+<summary>Docker Compose (API + Streamlit)</summary>
 
 ```bash
-python -m src.train
+docker compose up --build
 ```
+</details>
 
-## Future Improvements
 
-- Compare Random Forest with CatBoost, XGBoost, and Gradient Boosting
-- Add SHAP-based model explainability
-- Add automated tests for API endpoints and preprocessing
-- Add model monitoring and prediction logging
-- Improve the UI with price ranges and feature explanations
+## 📄 License
 
-## Author
+No license file has been chosen yet — all rights reserved by default. Feel free to
+open an issue if you'd like to use or contribute to the project.
 
-Somu Sartungi
+## 👤 Author
+
+**Somu Sartungi** — [github.com/somu-sartungi10](https://github.com/somu-sartungi10)

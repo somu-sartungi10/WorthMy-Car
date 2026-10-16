@@ -95,10 +95,6 @@ def main():
    
 
 
-    # =====================================================
-    # 4. Train final model
-    # =====================================================
-
     print("\nTraining final model...")
 
     model_pipeline.fit(
@@ -107,9 +103,6 @@ def main():
     )
 
 
-    # =====================================================
-    # 5. Feature importance
-    # =====================================================
 
     preprocessor = (
         model_pipeline
@@ -145,11 +138,6 @@ def main():
             index=False
         )
     )
-
-
-    # =====================================================
-    # 6. Evaluate on unseen test data
-    # =====================================================
 
     predictions = model_pipeline.predict(
         x_test

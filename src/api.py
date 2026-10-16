@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -6,7 +7,10 @@ import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
+from fastapi.middleware.cors import CORSMiddleware
 from pdf_report import create_pdf_report
+
+from .explain import explain_prediction
 from fastapi.responses import StreamingResponse
 
 
@@ -17,6 +21,19 @@ app = FastAPI(
     title="Car Price Prediction API",
     description="Predicts used-car resale prices using a Random Forest model.",
     version="1.0.0",
+)
+
+
+# Allow the React frontend (any origin by default; restrict with CORS_ORIGINS)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        origin.strip()
+        for origin in os.getenv("CORS_ORIGINS", "*").split(",")
+    ],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -81,11 +98,14 @@ def health_check():
 @app.post("/predict")
 def predict_price(car: CarInput):
     car_frame = pd.DataFrame([car.to_model_row()])
-    prediction = float(get_model().predict(car_frame)[0])
+    model = get_model()
+    prediction = float(model.predict(car_frame)[0])
+    explanation = explain_prediction(model, car_frame)
 
     return {
         "predicted_price": round(prediction, 2),
         "currency": "INR",
+        "explanation": explanation,
     }
 
 
