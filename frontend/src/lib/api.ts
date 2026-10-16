@@ -2,9 +2,25 @@ import type { CarPayload, PredictionExplanation } from "./types";
 
 /**
  * Base URL of the FastAPI backend.
- * Configure with the VITE_API_URL env var (defaults to local uvicorn).
+ *
+ * Resolution order:
+ *   1. `VITE_API_URL` — set it in your host's dashboard (Vercel → Settings →
+ *      Environment Variables). Vite inlines it at BUILD time, so a redeploy is
+ *      required after changing it.
+ *   2. The deployed Render API below — so a production build works even when no
+ *      environment variable is configured.
+ *   3. Local uvicorn — for `npm run dev`.
  */
-const rawBase = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+const DEPLOYED_API_URL = "https://carpredict-kcjf.onrender.com";
+const LOCAL_API_URL = "http://127.0.0.1:8000";
+
+// An empty or whitespace-only variable counts as "not configured".
+const configuredApiUrl = (import.meta.env.VITE_API_URL ?? "").trim();
+
+const rawBase =
+  configuredApiUrl ||
+  (import.meta.env.PROD ? DEPLOYED_API_URL : LOCAL_API_URL);
+
 export const API_BASE = rawBase.replace(/\/+$/, "");
 
 export type ApiErrorKind = "connection" | "timeout" | "http" | "unknown";
@@ -37,7 +53,11 @@ async function post(path: string, body: CarPayload): Promise<Response> {
       );
     }
     throw new ApiError(
-      `Cannot connect to the FastAPI backend at ${API_BASE}. Start it using: uvicorn src.api:app --reload`,
+      `Cannot reach the FastAPI backend at ${API_BASE}.${
+        import.meta.env.PROD
+          ? " The service may be down or still waking up (free hosting tiers sleep after inactivity) — retry in a moment."
+          : " Start it locally with: uvicorn src.api:app --reload"
+      }`,
       "connection",
     );
   }

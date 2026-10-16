@@ -117,6 +117,7 @@ test data.
 CarPredict/
 ├── frontend/                   # React + Vite + shadcn/ui app (deployed on Vercel)
 │   ├── scripts/generate-meta.mjs  # Builds public/meta.json from the dataset + metrics
+│   ├── vercel.json             # Rewrites client-side routes to index.html
 │   └── src/
 │       ├── pages/              # Home, PredictPrice, DealAnalysis
 │       ├── components/         # App shell, sections, shadcn/ui components
@@ -201,6 +202,124 @@ docker compose up --build
 ```
 </details>
 
+---
+
+## 🌍 Deployment
+
+### Deploy the React app on Vercel
+
+A production build points at the deployed Render API by default
+(`DEPLOYED_API_URL` in `frontend/src/lib/api.ts`), so importing the repo is enough:
+
+1. Push this repository to GitHub (`frontend/`, `data/raw/cardata.csv` and
+   `models/metrics.json` must be committed — the build script reads the CSV).
+2. On [vercel.com/new](https://vercel.com/new), **import the repository**.
+3. Set **Root Directory** to `frontend` (Settings → General). Vercel auto-detects
+   Vite; the build command `npm run build` and output directory `dist` are picked
+   up automatically.
+4. Deploy. The committed `frontend/vercel.json` rewrites client-side routes to
+   `index.html`, so `/predict` and `/deal` also work on refresh.
+5. Paste your URL into the **Live Demo** table at the top of this file.
+
+**Pointing at a different backend** — add this in Settings → Environment Variables:
+
+| Name | Value |
+|---|---|
+| `VITE_API_URL` | `https://your-api-host.example.com` |
+
+Vite inlines the variable **at build time**, so you must **redeploy** after changing
+it — editing the variable alone does not update existing deployments. An empty value
+is treated as “not set” and the deployed default is used.
+
+### Deploy the API on Render
+
+- Build command: `pip install -r requirements.txt`
+- Start command: `uvicorn src.api:app --host 0.0.0.0 --port $PORT`
+- Or deploy the included `Dockerfile.api`, which already honours `$PORT`
+- CORS defaults to `*`; restrict it with the `CORS_ORIGINS` env var
+  (comma-separated origins), e.g. your Vercel URL
+
+### Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `Cannot reach the FastAPI backend at http://127.0.0.1:8000` | The deployed bundle was built without an API URL and fell back to local uvicorn. | Redeploy the frontend — current builds default to the Render API. If you set `VITE_API_URL`, redeploy after changing it (build-time variable). |
+| `404` when refreshing `/predict` or `/deal` | Missing SPA fallback. | `frontend/vercel.json` provides it; make sure it is committed and Vercel's Root Directory is `frontend`. |
+| CORS error in the browser console | `CORS_ORIGINS` on Render excludes the frontend origin. | Unset it (defaults to `*`) or set it to your Vercel URL. |
+| First prediction takes 30–60 s, or times out | Free hosting tiers sleep after inactivity. | Retry once to wake the service; the frontend waits up to 90 s. |
+| `Prediction failed (422)` | A field failed Pydantic validation (e.g. year outside 1987–2026). | Check the flagged inputs. |
+
+---
+
+## 📡 API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/health` | API + model availability check |
+| `POST` | `/predict` | Predicted price in INR **with explanation** |
+| `POST` | `/download-report` | PDF report of the estimate (A4, ReportLab) |
+| `GET` | `/docs` | Interactive Swagger documentation |
+
+**`POST /predict` — example**
+
+```bash
+curl -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "make": "Honda", "model": "City", "year": 2019, "kilometer": 50000,
+    "fuel_type": "Petrol", "transmission": "Manual", "location": "Mumbai",
+    "color": "Black", "owner": "First Owner", "seller_type": "Dealer",
+    "engine": "1493 cc", "max_power": "70 bhp", "max_torque": "195 Nm",
+    "drivetrain": "FWD", "length": 3995, "width": 1745, "height": 1880,
+    "seating_capacity": 5, "fuel_tank_capacity": 45
+  }'
+```
+
+```json
+{
+  "predicted_price": 823019.86,
+  "currency": "INR",
+  "explanation": {
+    "base_value": 1722833.02,
+    "contributions": [
+      { "feature": "Max power (bhp)",      "contribution": -1137194.07 },
+      { "feature": "Year",                 "contribution": 164706.81 },
+      { "feature": "Width",                "contribution": 52006.04 },
+      { "feature": "Engine capacity (cc)", "contribution": 49843.31 }
+    ]
+  }
+}
+```
+
+`base_value + sum(contributions) == predicted_price` — verified to within the
+2-decimal rounding of the returned figures.
+
+---
+
+## 🔁 Retrain the Model
+
+```bash
+python -m src.train
+```
+
+This re-splits the data, trains a fresh Random Forest, prints test metrics and
+overwrites `models/car_price_model.pkl` + `models/metrics.json`. Re-run
+`npm run build` in `frontend/` afterwards so the UI picks up new metrics.
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Per-prediction feature contributions (explainability)
+- [x] React + shadcn/ui frontend
+- [x] Vercel + Render deployment
+- [ ] Confidence intervals around each estimate (MAE-based fair-price band)
+- [ ] Nearest comparable listings from the dataset ("similar cars" evidence)
+- [ ] Model bake-off: XGBoost / CatBoost vs Random Forest
+- [ ] Automated tests (`pytest` for the API, Vitest for the UI)
+- [ ] Bulk CSV pricing for dealers
+
+---
 
 ## 📄 License
 
