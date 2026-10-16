@@ -22,14 +22,9 @@ shadcn/ui** on the frontend.
 
 ## 🌐 Live Demo
 
-<!-- ============================================================
-     PASTE YOUR VERCEL LINK HERE after deploying (see "Deploy the
-     React app on Vercel" below), then delete this comment.
-     ============================================================ -->
-
 | | Link |
 |---|---|
-| **Web App (React, Vercel)** | 🔗 `https://YOUR-PROJECT.vercel.app` — *← replace with your Vercel URL* |
+| **Web App (React, Vercel)** | https://worth-my-car.vercel.app/predict |
 | **REST API (Render)** | https://carpredict-kcjf.onrender.com |
 | **API docs (Swagger UI)** | https://carpredict-kcjf.onrender.com/docs |
 | **API health check** | https://carpredict-kcjf.onrender.com/health |
